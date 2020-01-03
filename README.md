@@ -1,2 +1,2 @@
 # as6502
-assembler for 6502 cpu
+6502 CPU assembler
