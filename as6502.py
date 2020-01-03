@@ -103,4 +103,5 @@ if __name__ == "__main__":
   else:
     for k,i in enumerate(instr):
       print('[{:02d}] {:}'.format(k, instr[i]))
+    print('')
     print(''.join('{:02x}'.format(m) for m in mem))
