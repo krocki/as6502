@@ -1,0 +1,10 @@
+; this file has some comments
+;;;;;;;;;;;;
+    ;;;
+  ; comment ; comment ;;
+
+LDA #$c0 ; A := 0xc0
+TAX      ; X := A
+INX      ; X := X + 1
+ADC #$c4 ; A := A + 0xc4
+BRK      ; done
