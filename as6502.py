@@ -13,7 +13,7 @@ def assemble(lines, verbose=False, pc=0x600):
   if verbose:
     print('Assembling...')
 
-  pattern = '^([A-Za-z].*?)\s+((#?)(\$)?([0-9a-fA-F]*))$'
+  pattern = '^([A-Za-z].*?)(\s+((#?)(\$)?([0-9a-fA-F]*)))?$'
 
   data = {}
   instr = {}
@@ -22,12 +22,27 @@ def assemble(lines, verbose=False, pc=0x600):
 
   for i,l in enumerate(lines):
     m = re.search(pattern, l)
-    expr=m.group(0)
-    op=m.group(1)
-    argraw=m.group(2)
-    is_imm=len(m.group(3))==1
-    is_hex=len(m.group(4))==1
-    argval=int(m.group(5), 16) if is_hex else int(m.group(5), 10)
+    print(m.groups())
+
+    # syntax: expression = op (space arg)?
+    expr=m.group(0)             # entire expression
+    op=m.group(1)               # op
+    is_unary=m.group(2)==None   # no arg
+
+    if is_unary: # no arguments
+      encoding=opcodes[op][10] # sngl
+      argbytes=0
+    else: # 1 or more arguments
+      argraw=m.group(3)           # arg string
+      is_imm=len(m.group(4))==1
+      is_hex=len(m.group(5))==1
+      argval=int(m.group(6), 16) if is_hex else int(m.group(5), 10)
+      if is_imm:
+        encoding=opcodes[op][0] #imm
+        argbytes=1
+      else:
+        encoding=opcodes[op][4] #abs
+        argbytes=2
 
     if verbose:
       print('line {}=[{}]\n\texpr=[{}], '
@@ -38,13 +53,6 @@ def assemble(lines, verbose=False, pc=0x600):
              is_imm, is_hex, argval))
       print('{} encodings=[imm={:}]'.format(
         op, (opcodes[op][0])))
-    if is_imm:
-      encoding=opcodes[op][0] #imm
-      argbytes=1
-    else:
-      encoding=opcodes[op][4] #abs
-      argbytes=2
-
     if encoding==None:
       print('uh-oh')
     else:
