@@ -13,8 +13,7 @@ def assemble(lines, opt, pc=0x600):
   if opt.verbose:
     print('Assembling...')
 
-  pattern = '^(([A-Za-z].*?)(\s+((#?)(\$)?([0-9a-fA-F]*)))?)?(\s*(\;.*)?)?$'
-  #pattern = '^([A-Za-z].*?)(\s+((#?)(\$)?([0-9a-fA-F]*)))?$'
+  pattern = '^\s*(?P<expr>(?P<op>[A-Za-z]{3}?)\s*(?P<argraw>(?P<imm>#?)(?P<hex>\$?)(?P<argval>[0-9a-fA-F]{1,4})|(?P<arglab>[a-z]*?)))?\s*(\;.*)?$'
 
   data = {}
   instr = {}
@@ -28,27 +27,48 @@ def assemble(lines, opt, pc=0x600):
       print('regex groups={}'.format(m.groups()))
 
     # syntax: expression = op (space arg)?
-    expr=m.group(1)             # entire expression
-    op=m.group(2)               # op
+    expr=m.group('expr')        # entire expression
+    op=m.group('op')            # op
+
+    if opt.verbose:
+      print('expr={}, op={}'.format(expr, op))
 
     if op==None: # empty or comments
       continue
 
-    is_unary=True if m.group(4)==None else len(m.group(4))==0 # no args
+    argraw=m.group('argraw')
+    if opt.verbose:
+      print('argraw={}'.format(argraw))
+
+    is_unary=True if argraw==None else len(argraw)==0 # no args
+
+    if opt.verbose:
+      print('is_unary={}'.format(is_unary))
+
     if is_unary: # no arguments
       encoding=opcodes[op][10] # sngl
       argbytes=0
+
     else: # 1 or more arguments
-      argraw=m.group(4)           # arg string
-      is_imm=len(m.group(5))==1
-      is_hex=len(m.group(6))==1
-      argval=int(m.group(7), 16) if is_hex else int(m.group(5), 10)
-      arglen=len(m.group(7))
+      is_imm=m.group('imm')=="#"
+      is_hex=m.group('hex')=="$"
+      arglab_str = m.group('arglab')
+      argval_str = m.group('argval')
+      if opt.verbose:
+        print('is_imm={}, is_hex={}, '
+        'arglab_str={}, argval_str={}'.format(
+        is_imm, is_hex, arglab_str, argval_str))
+
+      argval=int(argval_str, 16) if is_hex \
+        else int(argval_str, 10) if is_imm \
+        else labels[arglab_str]
+
+      arglen=len(argval_str)
       if is_imm:
         encoding=opcodes[op][0] #imm
         argbytes=1
       else:
-        if arglen<3:
+        if arglen<=2:
           encoding=opcodes[op][1] #zp
           argbytes=1
         else:
