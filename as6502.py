@@ -13,12 +13,14 @@ def assemble(lines, opt, pc=0x600):
   if opt.verbose:
     print('Assembling...')
 
-  pattern = '^\s*(?P<expr>(?P<op>[A-Za-z]{3}?)\s*(?P<argraw>(?P<imm>#?)(?P<hex>\$?)(?P<argval>[0-9a-fA-F]{1,4})|(?P<arglab>[a-z]*?)))?\s*(\;.*)?$'
+  pattern = '^\s*((?P<label>[a-z]+):)|(?P<expr>(?P<op>[A-Za-z]{3}?)\s*(?P<argraw>(?P<imm>#?)(?P<hex>\$?)(?P<argval>[0-9a-fA-F]{1,4})|(?P<arglab>[a-z]*?)))?\s*(\;.*)?$'
 
   data = {}
   instr = {}
 
   pos = 0
+
+  labels = {}
 
   for i,l in enumerate(lines):
     m = re.search(pattern, l)
@@ -29,12 +31,25 @@ def assemble(lines, opt, pc=0x600):
     # syntax: expression = op (space arg)?
     expr=m.group('expr')        # entire expression
     op=m.group('op')            # op
+    label=m.group('label')      # label
 
     if opt.verbose:
-      print('expr={}, op={}'.format(expr, op))
+      print('label={}, expr={}, op={}'.format(label, expr, op))
+
+    if label:
+      if opt.verbose:
+        print('inserting label [{}]'.format(label))
+      labels[label] = pos
 
     if op==None: # empty or comments
       continue
+
+    is_bra=op in ['BPL','BMI','BVC',
+                  'BCC','BCS','BNE',
+                  'BEQ']
+
+    if opt.verbose:
+      print('is_bra={}'.format(is_bra))
 
     argraw=m.group('argraw')
     if opt.verbose:
@@ -63,8 +78,12 @@ def assemble(lines, opt, pc=0x600):
         else int(argval_str, 10) if is_imm \
         else labels[arglab_str]
 
-      arglen=len(argval_str)
-      if is_imm:
+      arglen=len(argval_str) if argval_str else 1
+      if is_bra:
+        encoding=opcodes[op][11]
+        argbytes=1
+        argval=(argval-pos-2)
+      elif is_imm:
         encoding=opcodes[op][0] #imm
         argbytes=1
       else:
@@ -82,9 +101,6 @@ def assemble(lines, opt, pc=0x600):
       xs=opcodes[op]
       x_str = [hex(x) if x!=None else '' for x in xs]
       print('{:} {}'.format(op, x_str))
-      print('argval={}, arglen={}\n'
-            'encoding={:x}, argbytes={}'.format(
-            argval, arglen, encoding, argbytes))
 
     if encoding==None:
       print('uh-oh')
