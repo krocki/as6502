@@ -1,0 +1,12 @@
+ ; author;
+
+  LDX #$2
+decrement:
+  DEX
+  STX $0200
+  CPX #$3
+  BNE decrement ; jump
+  STX $0201
+  LDX #$2
+BRK
+

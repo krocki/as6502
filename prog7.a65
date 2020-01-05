@@ -1,0 +1,16 @@
+ ; comment
+  LDX #$2
+decrement:
+  DEX
+  STX $0200
+  CPX #$03
+  BNE decrement
+  STX $0201
+  LDX #$2
+decrement2:
+  DEX
+  STX $0202
+  CPX #$03
+  BNE decrement2
+  STX $0203
+  BRK
