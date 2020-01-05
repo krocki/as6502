@@ -8,9 +8,6 @@ from defs import opcodes
 def assemble(lines, opt, pc=0x600):
 
   if opt.verbose:
-    print('Scanning for labels...')
-
-  if opt.verbose:
     print('Assembling...')
 
   pattern = '^\s*((?P<label>[A-za-z0-9_]+):)|(?P<expr>(?P<op>[A-Za-z]{3}?)\s*(?P<argraw>(?P<imm>#?)(?P<hex>\$?)(?P<argval>[0-9a-fA-F]{1,4})|(?P<arglab>[A-za-z0-9_]*?)))?\s*(\;.*)?$'
