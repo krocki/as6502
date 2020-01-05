@@ -24,7 +24,8 @@ def assemble(lines, opt, pc=0x600):
   for i,l in enumerate(lines):
     m = re.search(pattern, l)
     if opt.verbose:
-      print(m.groups())
+      print('line {}=[{}]'.format(i,l))
+      print('regex groups={}'.format(m.groups()))
 
     # syntax: expression = op (space arg)?
     expr=m.group(1)             # entire expression
@@ -42,25 +43,29 @@ def assemble(lines, opt, pc=0x600):
       is_imm=len(m.group(5))==1
       is_hex=len(m.group(6))==1
       argval=int(m.group(7), 16) if is_hex else int(m.group(5), 10)
+      arglen=len(m.group(7))
       if is_imm:
         encoding=opcodes[op][0] #imm
         argbytes=1
       else:
-        encoding=opcodes[op][4] #abs
-        argbytes=2
+        if arglen<3:
+          encoding=opcodes[op][1] #zp
+          argbytes=1
+        else:
+          encoding=opcodes[op][4] #abs
+          argbytes=2
 
     if opt.strip:
       print('{}'.format(expr))
 
     if opt.verbose:
-      print('line {}=[{}]\n\texpr=[{}], '
-            'op=[{}], argraw=[{}]\n\t'
-            'is_imm=[{}], is_hex=[{}], '
-            'argval=[{}]'.format(
-             i, l, expr, op, argraw,
-             is_imm, is_hex, argval))
-      print('{} encodings=[imm={:}]'.format(
-        op, (opcodes[op][0])))
+      xs=opcodes[op]
+      x_str = [hex(x) if x!=None else '' for x in xs]
+      print('{:} {}'.format(op, x_str))
+      print('argval={}, arglen={}\n'
+            'encoding={:x}, argbytes={}'.format(
+            argval, arglen, encoding, argbytes))
+
     if encoding==None:
       print('uh-oh')
     else:
@@ -80,6 +85,9 @@ def assemble(lines, opt, pc=0x600):
   mem = [0x00] * prog_len
   for k in data:
     mem[k] = data[k]
+
+  if opt.verbose:
+    print('Assembled, {} Bytes'.format(prog_len))
 
   return mem, instr
 
