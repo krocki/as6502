@@ -1,5 +1,5 @@
 #!/bin/bash
-TESTS=(sierp0)
+TESTS=(sierp0 sierp1)
 
 for t in ${TESTS[@]}; do
   rm -rf $t.bin

@@ -5,12 +5,59 @@ import argparse
 import re
 from defs import *
 
+def encode(op, mode, rawval, is_hex, opt, pc):
+
+  instr = {}
+  val=None
+  if rawval:
+    val=int(rawval, 16) if is_hex \
+    else int(rawval, 10)
+
+  argbytes=mode[3]
+  encoding=opcodes[op][mode[0]]
+
+  if opt.verbose:
+    print('  * mode [{}], opcode [0x{:02x}], argbytes [{}] '.format(mode[1], encoding, argbytes))
+    print('  * rawval [{}], ishex [{}], val [{}] '.format(rawval, is_hex, val))
+
+  if mode[1]=='rel':
+     val=(val-pc-2)
+
+  s=[encoding]
+  for b in range(argbytes):
+    s.append((val >> (8*b)) & 0xff)
+
+  instr['src'] = '{} {}'.format(op, rawval)
+  instr['obj'] = s
+
+  return instr
+
+def find_mode(op, args):
+  encodings=list(filter(lambda y: y[1]!=None, [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
+
+  mode=None
+  is_hex=None
+  rawval=None
+
+  for m, e in encodings:
+    p=re.search(modes[m][2], args)
+    if p!=None:
+      found_mode = modes[m]
+      if None==mode or found_mode[3] < mode[3]:
+        mode = found_mode
+      if mode[0] != 10:
+        is_hex = p.group(1)
+        rawval = p.group(2)
+
+  return mode, is_hex, rawval
+
 def assemble(lines, opt):
 
   pattern = '^\s*(?P<expr>(?P<label>[a-z]*):|(?P<op>[a-zA-z]{3})(?P<args>.*?))?(?P<comment>;.*)?$'
 
   instr = {}
   labels = {}
+  unresolved = {}
   data = {}
   pc = opt.pc
 
@@ -21,6 +68,7 @@ def assemble(lines, opt):
 
     if opt.verbose:
       print('labels={}'.format(labels))
+      print('unresolved={}'.format(unresolved))
 
     # syntax: expression = op (space arg)?
     expr=m.group('expr')        # entire expression
@@ -30,13 +78,20 @@ def assemble(lines, opt):
     comment=m.group('comment')  # comment
 
     if opt.verbose:
-      print(' label=[{}], expr=[{}], op=[{}], args=[{}], comm=[{}]'.format(
-        label, expr, op, args, comment))
+      print(' label=[{}], expr=[{}], op=[{}], args=[{}], comm=[{}]'.format(label, expr, op, args, comment))
 
     if label:
+      labels[label] = '${:04x}'.format(pc)
       if opt.verbose:
         print('  * lab [{}] pc={:x}'.format(label, pc))
-      labels[label] = ' $'+str(hex(pc))
+      if label in unresolved:
+        f=unresolved[label]
+        pc0=f[0]
+        op0=f[1]
+        arg0=labels[label]
+        mode0, is_hex0, rawval0 = find_mode(op0, arg0)
+        instr[pc0] = encode(op0, mode0, rawval0, is_hex0, opt, pc0)
+        unresolved[label] = {}
 
     # is arg a label ?
     if args:
@@ -50,45 +105,18 @@ def assemble(lines, opt):
       continue
 
     else:
-      encodings=list(filter(lambda y: y[1]!=None, [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
-
-      mode=None
-      for m, e in encodings:
-        p=re.search(modes[m][2], args)
-        if p!=None:
-          mode = modes[m]
-          if mode[0] != 10:
-            is_hex = p.group(1)
-            rawval = p.group(2)
-
+      mode, is_hex, rawval = find_mode(op, args)
       if None==mode:
-        print('uh-oh: could not find addressing mode')
-        return None
+        mode, is_hex, rawval = find_mode(op, "$0")
+        if None==mode:
+          print('uh-oh: could not find addressing mode')
+          return None, None, None
+        else:
+          # assume val 0
+          unresolved[args.strip()] = [pc, op]
 
-      val=int(rawval, 16) if is_hex \
-      else int(rawval, 10)
-
-      argbytes=mode[3]
-      encoding=opcodes[op][mode[0]]
-
-      if opt.verbose:
-        print('  * mode [{}], opcode [0x{:02x}], argbytes [{}] '.format(mode[1], encoding, argbytes))
-        print('  * rawval [{}], ishex [{}], val [0x{:04x}] '.format(rawval, is_hex, val))
-
-      if mode[1]=='rel':
-         val=(val-pc-2)
-      addr=pc
-      s=[encoding]
-      pc+=1
-      for b in range(argbytes):
-        data[pc] = (val >> (8*b)) & 0xff
-        s.append(data[pc])
-        pc+=1
-
-      instr[addr] = {}
-      instr[addr]['src'] = '{:20} {:3} {:10}'.format(expr, op, args)
-      instr[addr]['obj'] = s
-      if opt.verbose: print('  * assembled [{}]'.format(s))
+      instr[pc] = encode(op, mode, rawval, is_hex, opt, pc)
+      pc+=len(instr[pc]['obj'])
 
   return instr, pc - opt.pc, labels
 
