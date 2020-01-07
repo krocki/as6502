@@ -17,8 +17,10 @@ def encode(op, mode, rawval, is_hex, opt, pc):
   encoding=opcodes[op.lower()][mode[0]]
 
   if opt.verbose:
-    print('  * mode [{}], opcode [0x{:02x}], argbytes [{}] '.format(mode[1], encoding, argbytes))
-    print('  * rawval [{}], ishex [{}], val [{}] '.format(rawval, is_hex, val))
+    print('  * mode [{}], opcode [0x{:02x}], argbytes [{}] '.format(
+      mode[1], encoding, argbytes))
+    print('  * rawval [{}], ishex [{}], val [{}] '.format(
+      rawval, is_hex, val))
 
   if mode[1]=='rel':
      val=(val-pc-2)
@@ -33,11 +35,13 @@ def encode(op, mode, rawval, is_hex, opt, pc):
   return instr
 
 def find_mode(op, args):
-  encodings=list(filter(lambda y: y[1]!=None, [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
+  encodings=list(filter(lambda y: y[1]!=None,
+  [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
 
   mode=None
   is_hex=None
   rawval=None
+  if args==None: args = ""
 
   for m, e in encodings:
     p=re.search(modes[m][2], args)
@@ -53,12 +57,12 @@ def find_mode(op, args):
 
 def assemble(lines, opt):
 
-  pattern = '^\s*(?P<expr>(?P<label>[a-z]*):|(?P<op>[a-zA-z]{3})(?P<args>.*?))?(?P<comment>;.*)?$'
+  pattern = '^\s*(((?P<label>[A-Za-z0-9]+):)?' \
+            '\s*(?P<expr>(?P<op>[a-zA-z]{3})' \
+            '(\s+(?P<args>.*?))?)?)?' \
+            '(?P<comment>;.*)?$'
 
-  instr = {}
-  labels = {}
-  unresolved = {}
-  data = {}
+  instr, labels, unresolved, data = {}, {}, {}, {}
   pc = opt.pc
 
   for i,l in enumerate(lines):
@@ -78,7 +82,9 @@ def assemble(lines, opt):
     comment=m.group('comment')  # comment
 
     if opt.verbose:
-      print(' label=[{}], expr=[{}], op=[{}], args=[{}], comm=[{}]'.format(label, expr, op, args, comment))
+      print(' label=[{}], expr=[{}], ' \
+            'op=[{}], args=[{}], comm=[{}]'.format(
+            label, expr, op, args, comment))
 
     if label:
       labels[label] = '${:04x}'.format(pc)
@@ -165,4 +171,5 @@ if __name__ == "__main__":
       print('Assembled, {} Bytes'.format(n_bytes))
       print('labels', labels)
       for k,i in enumerate(instr):
-        print('[{}] -> [0x{:04x}] {:}'.format(instr[i]['src'], i, ['0x{:02x}'.format(x) for x in instr[i]['obj']]))
+        print('[{}] -> [0x{:04x}] {:}'.format(
+          instr[i]['src'], i, ['0x{:02x}'.format(x) for x in instr[i]['obj']]))
