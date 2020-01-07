@@ -1,5 +1,37 @@
-# as6502
-A basic assembler for 6502 cpu
+# A basic assembler for 6502 cpu
+
+What works:
+- all instructions should be fine
+- all addressing modes in theory should work (but haven't tried all combinations)
+- labels
+- forward reference (limited to instructions which always produce the same instruction length as relocation is not implemented)
+- comments
+
+### Syntax:
+Line = [label | expression] [comment]
+expression = OP [ARG]
+comment = ; [text]
+label = text + ':'
+
+ARG has different formats and decides which addressing mode should be used
+in short:
+
+- '#' means immediate, $ means hex
+- anything containing ',' is indexed mode
+- '(val)' means indirect
+
+OP is one of the 3 letter instruction mnemonics
+See https://www.masswerk.at/6502/6502_instruction_set.html
+
+```
+loop:
+```
+
+What is missing:
+- full forward reference
+- variable assignment (equ..)
+- data declaration (byte, etc)
+- macros and other features
 
 ## usage:
 ```
