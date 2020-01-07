@@ -2,24 +2,41 @@
 6502 CPU assembler
 
 ```
-$ python3 as6502.py -c prog1.a65
+; loop.a65
+
+  LDX #$08
+loop:
+  DEX
+  STX $0200
+  CPX #$03
+  BNE loop
+  STX $0201
+```
+
+### Print to the console
+```
+$ python3 as6502.py -c loop.a65
 ```
 
 ```
-[00] 0x0000: a9 01
-[01] 0x0002: 8d 00 02
-[02] 0x0005: a9 05
-[03] 0x0007: 8d 01 02
-[04] 0x000a: a9 08
-[05] 0x000c: 8d 02 02
-
-a9018d0002a9058d0102a9088d0202
+Assembled, 13 Bytes
+labels {'loop': '$0604'}
+[LDX 3]    -> [0x0600] ['0xa2', '0x03']
+[LDY 00]   -> [0x0602] ['0xa0', '0x00']
+[TXA None] -> [0x0604] ['0x8a']
+[STA 0200] -> [0x0605] ['0x99', '0x00', '0x02']
+[INY None] -> [0x0608] ['0xc8']
+[CPY 10]   -> [0x0609] ['0xc0', '0x10']
+[BNE 604]  -> [0x060b] ['0xd0', '0xf7']
 ```
 
+### Or write to a file
+
 ```
-$ python3 as6502.py -c prog1.a65 -o prog1.bin
-$ xxd prog1.bin
+$ python3 as6502.py -c loop.a65 -o loop.bin
+$ xxd loop.bin
 ```
+
 ```
-00000000: a901 8d00 02a9 058d 0102 a908 8d02 02    ...............
+00000000: a203 a000 8a99 0002 c8c0 10d0 f7
 ```

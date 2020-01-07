@@ -14,7 +14,7 @@ def encode(op, mode, rawval, is_hex, opt, pc):
     else int(rawval, 10)
 
   argbytes=mode[3]
-  encoding=opcodes[op][mode[0]]
+  encoding=opcodes[op.lower()][mode[0]]
 
   if opt.verbose:
     print('  * mode [{}], opcode [0x{:02x}], argbytes [{}] '.format(mode[1], encoding, argbytes))

@@ -1,0 +1,9 @@
+; memset loop
+  LDX #$3
+  LDY #$00
+loop:
+  TXA
+  STA $0200,Y
+  INY
+  CPY #$10
+  BNE loop ; loop $10 times
