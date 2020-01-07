@@ -23,6 +23,7 @@ in short:
 - '(val)' means indirect
 
 OP is one of the 3 letter instruction mnemonics
+
 See https://www.masswerk.at/6502/6502_instruction_set.html
 and `defs.py`
 
