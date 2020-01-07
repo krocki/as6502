@@ -6,7 +6,7 @@ import re
 from defs import *
 
 def encode(op, mode, rawval, is_hex, opt, pc):
-
+  # a helper function which fills the instruction structure
   instr = {}
   val=None
   if rawval:
@@ -35,6 +35,10 @@ def encode(op, mode, rawval, is_hex, opt, pc):
   return instr
 
 def find_mode(op, args):
+  # given an expression=(op, args)
+  # determine an addressing mode or return None
+  # if invalid syntax
+  
   encodings=list(filter(lambda y: y[1]!=None,
   [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
 
@@ -57,6 +61,12 @@ def find_mode(op, args):
 
 def assemble(lines, opt):
 
+  # a regex which accepts lines
+  # line = [label] [expr] [comment]
+  # expr = OPC [args] - see defs.py for syntax
+  # label = alphanum + ':'
+  # comment = ';' + anything
+  
   pattern = '^\s*(((?P<label>[A-Za-z0-9]+):)?' \
             '\s*(?P<expr>(?P<op>[a-zA-z]{3})' \
             '(\s+(?P<args>.*?))?)?)?' \
@@ -74,7 +84,7 @@ def assemble(lines, opt):
       print('labels={}'.format(labels))
       print('unresolved={}'.format(unresolved))
 
-    # syntax: expression = op (space arg)?
+    # extract tokens
     expr=m.group('expr')        # entire expression
     op=m.group('op')            # op
     label=m.group('label')      # label
@@ -86,17 +96,22 @@ def assemble(lines, opt):
             'op=[{}], args=[{}], comm=[{}]'.format(
             label, expr, op, args, comment))
 
+    # do we have a label?
     if label:
+      # insert into our dictionary
       labels[label] = '${:04x}'.format(pc)
       if opt.verbose:
         print('  * lab [{}] pc={:x}'.format(label, pc))
+      # have we tried to look it up before?
       if label in unresolved:
         f=unresolved[label]
+        # patch the unresolved symbol
         pc0=f[0]
         op0=f[1]
         arg0=labels[label]
         mode0, is_hex0, rawval0 = find_mode(op0, arg0)
         instr[pc0] = encode(op0, mode0, rawval0, is_hex0, opt, pc0)
+        # clear
         unresolved[label] = {}
 
     # is arg a label ?
@@ -110,15 +125,20 @@ def assemble(lines, opt):
     if op==None: # empty or comments
       continue
 
+    # op present
     else:
+      # determine the mode
       mode, is_hex, rawval = find_mode(op, args)
       if None==mode:
+        # something went wrong, maybe it's a label
+        # try passing 0 as arg
         mode, is_hex, rawval = find_mode(op, "$0")
         if None==mode:
+          # still not working: FATAL
           print('uh-oh: could not find addressing mode')
           return None, None, None
         else:
-          # assume val 0
+          # 0 as arg worked, we need to patch it later
           unresolved[args.strip()] = [pc, op]
 
       instr[pc] = encode(op, mode, rawval, is_hex, opt, pc)
