@@ -5,9 +5,13 @@
 This will assemble test programs and compare to reference binaries.
 
 `sierp0` - a very short program generating the following pattern in the screen buffer region (0x200 - 0x600). Tests multiple addressing modes and labels.
+
 <img src="sierp0.gif" width=300 />
+
 `sierp1` - a slightly more involved version - this one uses forward label referencing and requires more gymnastics.
+
 <img src="sierp1.gif" width=300 />
+
 source: http://www.6502asm.com/
 
 ```
