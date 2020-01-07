@@ -1,3 +1,5 @@
+# addressing modes
+#  id   name    arg format, number of bytes
 modes = [
   [ 0, 'imm',  '^\s*#(\$?)([0-9a-f]{1,2})\s*$', 1 ],
   [ 1, 'zp',   '^\s*(\$?)0?0?([0-9a-f]{1,2})\s*$', 1 ],
