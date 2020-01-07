@@ -1,5 +1,14 @@
 # as6502
-6502 CPU assembler
+A basic assembler for 6502 cpu
+
+## usage:
+```
+python3 as6502.py -c [input_file] [-o output_file]
+```
+
+### quick start
+
+A short program which writes value of $08 in a loop to memory addresses starting with $200
 
 ```
 ; loop.a65
@@ -11,9 +20,11 @@ loop:
   CPX #$03
   BNE loop
   STX $0201
+  
 ```
 
-### Print to the console
+### Print to the console (without -o option)
+
 ```
 $ python3 as6502.py -c loop.a65
 ```
@@ -30,7 +41,7 @@ labels {'loop': '$0604'}
 [BNE 604]  -> [0x060b] ['0xd0', '0xf7']
 ```
 
-### Or write to a file
+### Or write to a file (-o loop.bin)
 
 ```
 $ python3 as6502.py -c loop.a65 -o loop.bin
