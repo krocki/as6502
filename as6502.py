@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: krocki
 
+import time
 import argparse
 import re
 from defs import *
@@ -38,7 +39,7 @@ def find_mode(op, args):
   # given an expression=(op, args)
   # determine an addressing mode or return None
   # if invalid syntax
-  
+
   encodings=list(filter(lambda y: y[1]!=None,
   [(i,e) for i,e in enumerate(opcodes[op.lower()])]))
 
@@ -66,7 +67,7 @@ def assemble(lines, opt):
   # expr = OPC [args] - see defs.py for syntax
   # label = alphanum + ':'
   # comment = ';' + anything
-  
+
   pattern = '^\s*(((?P<label>[A-Za-z0-9]+):)?' \
             '\s*(?P<expr>(?P<op>[a-zA-z]{3})' \
             '(\s+(?P<args>.*?))?)?)?' \
@@ -175,7 +176,9 @@ if __name__ == "__main__":
   if opt.verbose:
     print('{:} read, {:} lines, assembling...'.format(ifile, len(lines)))
 
+  t0 = time.clock()
   instr, n_bytes, labels = assemble(lines, opt)
+  t1 = time.clock()
 
   if None==instr:
     print('Assembly failed!')
@@ -188,7 +191,7 @@ if __name__ == "__main__":
       with open(ofile, 'wb') as fp:
         fp.write(bytearray(mem))
     else:
-      print('Assembled, {} Bytes'.format(n_bytes))
+      print('Assembled in {} s, {} Bytes'.format(t1-t0, n_bytes))
       print('labels', labels)
       for k,i in enumerate(instr):
         print('[{}] -> [0x{:04x}] {:}'.format(
