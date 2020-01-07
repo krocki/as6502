@@ -83,3 +83,4 @@ and `defs.py`
 - variable assignment (equ..)
 - data declaration (byte, etc)
 - macros and other features
+- warnings and checks (you will not get a warning if you overwrite something)
