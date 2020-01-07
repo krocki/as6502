@@ -1,48 +1,11 @@
 # A basic assembler for 6502 cpu
 
-What works:
-- all instructions should be fine
-- all addressing modes in theory should work (but haven't tried all combinations)
-- labels
-- forward reference (limited to instructions which always produce the same instruction length as relocation is not implemented)
-- comments
-
-### Syntax:
-```
-Line = [label | expression] [comment]
-expression = OP [ARG]
-comment = ; [text]
-label = text + ':'
-```
-
-ARG has different formats and decides which addressing mode should be used
-in short:
-
-- '#' means immediate, $ means hex
-- anything containing ',' is indexed mode
-- '(val)' means indirect
-
-OP is one of the 3 letter instruction mnemonics
-
-See https://www.masswerk.at/6502/6502_instruction_set.html
-and `defs.py`
-
-```
-loop:
-```
-
-What is missing:
-- full forward reference
-- variable assignment (equ..)
-- data declaration (byte, etc)
-- macros and other features
-
-## usage:
+### Usage:
 ```
 python3 as6502.py -c [input_file] [-o output_file]
 ```
 
-### quick start
+### Quick start
 
 A short program which writes value of $08 in a loop to memory addresses starting with $200
 
@@ -87,3 +50,40 @@ $ xxd loop.bin
 ```
 00000000: a203 a000 8a99 0002 c8c0 10d0 f7
 ```
+
+### What works:
+- all instructions should be fine
+- all addressing modes in theory should work (but haven't tried all combinations)
+- labels
+- forward reference (limited to instructions which always produce the same instruction length as relocation is not implemented)
+- comments
+
+### Syntax:
+```
+Line = [label | expression] [comment]
+expression = OP [ARG]
+comment = ; [text]
+label = text + ':'
+```
+
+ARG has different formats and decides which addressing mode should be used
+in short:
+
+- *#* means immediate, *$* means hex
+- anything containing *,* is indexed mode
+- *( VAL )* means indirect
+
+OP is one of the 3 letter instruction mnemonics
+
+See https://www.masswerk.at/6502/6502_instruction_set.html
+and `defs.py`
+
+```
+loop:
+```
+
+### What is missing:
+- full forward reference
+- variable assignment (equ..)
+- data declaration (byte, etc)
+- macros and other features
