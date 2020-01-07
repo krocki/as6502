@@ -7,18 +7,18 @@ python3 as6502.py -c [input_file] [-o output_file]
 
 ### Quick start
 
-A short program which writes value of $08 in a loop to memory addresses starting with $200
+A short program which writes value of $08 in a loop to memory addresses starting with $200 (`loop.a65`)
 
 ```
-; loop.a65
-
-  LDX #$08
+  LDX #$3       ; X := $3
+  LDY #$00      ; Y := $0
+  
 loop:
-  DEX
-  STX $0200
-  CPX #$03
-  BNE loop
-  STX $0201
+  TXA           ; A := X
+  STA $0200,Y   ; [200 + Y] = A
+  INY           ; Y := Y + 1
+  CPY #$10      ; if Y != $10 goto loop
+  BNE loop ; loop $10 times
   
 ```
 
