@@ -1,9 +1,11 @@
-; memset loop
-  LDX #$3
-  LDY #$00
+; a simple loop
+
+  LDX #$3       ; X := $3
+  LDY #$00      ; Y := $0
+  
 loop:
-  TXA
-  STA $0200,Y
-  INY
-  CPY #$10
-  BNE loop ; loop $10 times
+  TXA           ; A := X
+  STA $0200,Y   ; [200 + Y] = A
+  INY           ; Y := Y + 1
+  CPY #$10      ; if Y != $10 goto loop
+  BNE loop      ; loop $10 times
