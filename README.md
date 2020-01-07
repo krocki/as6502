@@ -18,7 +18,7 @@ loop:
   STA $0200,Y   ; [200 + Y] = A
   INY           ; Y := Y + 1
   CPY #$10      ; if Y != $10 goto loop
-  BNE loop ; loop $10 times
+  BNE loop      ; loop $10 times
   
 ```
 
