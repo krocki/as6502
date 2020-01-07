@@ -8,10 +8,12 @@ What works:
 - comments
 
 ### Syntax:
+```
 Line = [label | expression] [comment]
 expression = OP [ARG]
 comment = ; [text]
 label = text + ':'
+```
 
 ARG has different formats and decides which addressing mode should be used
 in short:
@@ -22,6 +24,7 @@ in short:
 
 OP is one of the 3 letter instruction mnemonics
 See https://www.masswerk.at/6502/6502_instruction_set.html
+and `defs.py`
 
 ```
 loop:
