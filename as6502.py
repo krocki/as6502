@@ -176,9 +176,10 @@ if __name__ == "__main__":
   if opt.verbose:
     print('{:} read, {:} lines, assembling...'.format(ifile, len(lines)))
 
-  t0 = time.clock()
+  t0 = time.perf_counter()
+
   instr, n_bytes, labels = assemble(lines, opt)
-  t1 = time.clock()
+  t1 = time.perf_counter()
 
   if None==instr:
     print('Assembly failed!')
@@ -191,7 +192,7 @@ if __name__ == "__main__":
       with open(ofile, 'wb') as fp:
         fp.write(bytearray(mem))
     else:
-      print('Assembled in {} s, {} Bytes'.format(t1-t0, n_bytes))
+      print('Assembled in {:6f} s, {} Bytes'.format(t1-t0, n_bytes))
       print('labels', labels)
       for k,i in enumerate(instr):
         print('[{}] -> [0x{:04x}] {:}'.format(
