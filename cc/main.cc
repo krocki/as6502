@@ -51,8 +51,13 @@ bool string_is_empty(std::string &str) {
 }
 
 std::regex
-line_expr("^\\s*((([A-Za-z0-9]+):)?\\s*(([a-zA-z]{3})(\\s+(.*?))?)?)?(;.*)?$");
-//line_expr("^\\s*(((?P<label>[A-Za-z0-9]+):)?\\s*(?P<expr>(?P<op>[a-zA-z]{3})(\\s+(?P<args>.*?))?)?)?(?P<comment>;.*)?$");
+line_expr(
+    "^" // sol
+    "\\s*((([A-Za-z0-9]+):)?" // label
+    "\\s*(([a-zA-z]{3})" // op
+    "(\\s+(.*?))?)?)?" // arg
+    "(;.*)?" // comment
+    "$"); // eol
 
 struct codeline parse_regex(std::string &line) {
 
@@ -164,6 +169,11 @@ int main(int argc, char **argv) {
   for (auto &c: labels) {
     std::cout << c.first << "@" << c.second << "\n";
   }
+
+  // Pass 1 - Find All Defines and Labels
+  // Pass 2 - Assign PC and Pick Opcodes
+  // Pass 3 - Transform Labels
+  // Pass 4 - Resolve Label References
 
   infile.close();
   dbg.close();
